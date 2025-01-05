@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connections Graph</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
+  <style>
+    #connections-graph-container {
+      position: relative;
+      background-color: black;
+      margin: 0 auto;
+      width: 100%;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #connections-graph {
+      height: 700px;
+      width: 100%;
+    }
+
+    .toggle-physics-button {
+      background-color: #4a90e2;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 4px;
+      font-size: 18px;
+      margin: 0 auto; /* Center horizontally */
+      cursor: pointer;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      position: sticky; /* Sticks within the viewport */
+      top: 10px; /* 10px from the top of the viewport */
+      z-index: 9999; /* Ensure it's above other elements */
+    }
+  </style>
+</head>
+<body>
+
+<div id="connections-graph-container">
+  <button class="toggle-physics-button">Push Button</button>
+  <div id="connections-graph"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const items = [
+      { id: 1, title: "Item 1", tags: ["Tag1", "Tag2", "Tag3", "Tag4"] },
+      { id: 2, title: "Item 2", tags: ["Tag2", "Tag5", "Tag6", "Tag7"] },
+      { id: 3, title: "Item 3", tags: ["Tag3", "Tag8", "Tag9", "Tag2"] },
+      { id: 4, title: "Item 4", tags: ["Tag4", "Tag1", "Tag10", "Tag3"] },
+      { id: 5, title: "Item 5", tags: ["Tag5", "Tag6", "Tag7", "Tag1"] },
+      // Add more items as needed
+    ];
+
+    const nodes = new vis.DataSet([]);
+    const edges = new vis.DataSet([]);
+    const nodeConnections = {};
+
+    items.forEach(item => {
+      const itemNode = {
+        id: item.id,
+        label: item.title,
+        title: `<h3>${item.title}</h3><ul>${item.tags.map(tag => `<li>${tag}</li>`).join('')}</ul>`,
+        group: "item",
+        size: item.tags.length * 3
+      };
+      nodes.add(itemNode);
+
+      item.tags.forEach(tag => {
+        const tagNode = nodes.get(tag);
+        if (!tagNode) {
+          nodes.add({ id: tag, label: tag, group: "tag" });
+        }
+        edges.add({ from: item.id, to: tag });
+
+        nodeConnections[tag] = (nodeConnections[tag] || 0) + 1;
+        nodeConnections[item.id] = (nodeConnections[item.id] || 0) + 1;
+      });
+    });
+
+    nodes.forEach(node => {
+      const connectionCount = nodeConnections[node.id] || 0;
+      node.size = connectionCount * 3;
+      nodes.update(node);
+    });
+
+    const container = document.getElementById("connections-graph");
+    const data = { nodes: nodes, edges: edges };
+    const options = {
+      nodes: {
+        shape: 'dot',
+        font: { size: 16 },
+      },
+      physics: {
+        enabled: false,
+        solver: 'forceAtlas2Based',
+      },
+      interaction: {
+        hover: true,
+        zoomView: true,
+        zoomSpeed: 0.5,
+        initialScale: 0.2,
+      },
+      layout: {
+        randomSeed: 2,
+        hierarchical: false,
+        improvedLayout: false,
+        circular: true,
+      },
+    };
+
+    const network = new vis.Network(container, data, options);
+
+    network.moveTo({
+      position: { x: 0, y: 0 },
+      scale: .3,
+    });
+
+    const toggleButton = document.querySelector(".toggle-physics-button");
+    let physicsEnabled = false;
+    let currentLayout = "circular";
+
+    toggleButton.addEventListener("click", function () {
+      physicsEnabled = !physicsEnabled;
+      options.physics.enabled = physicsEnabled;
+      if (currentLayout === "circular") {
+        options.layout.randomSeed = 2;
+        options.layout.circular = false;
+        currentLayout = "random";
+      } else {
+        options.layout.randomSeed = 2;
+        options.layout.circular = true;
+        currentLayout = "circular";
+      }
+      network.setOptions(options);
+      toggleButton.textContent = physicsEnabled ? "Disable Physics" : "Enable Physics";
+    });
+  });
+</script>
+
+</body>
+</html>
