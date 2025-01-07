@@ -62,32 +62,39 @@
     const edges = new vis.DataSet([]);
     const nodeConnections = {};
 
+    // Process each item and add item nodes and tag nodes
     items.forEach(item => {
       const itemNode = {
         id: item.id,
         label: item.title,
         title: `<h3>${item.title}</h3><ul>${item.tags.map(tag => `<li>${tag}</li>`).join('')}</ul>`,
         group: "item",
-        size: item.tags.length * 3
+        size: item.tags.length * 3 // Scale item node size by the number of tags
       };
       nodes.add(itemNode);
 
+      // Process each tag and connect it to the item
       item.tags.forEach(tag => {
+        // Add tag node if it doesn't exist
         const tagNode = nodes.get(tag);
         if (!tagNode) {
-          nodes.add({ id: tag, label: tag, group: "tag" });
+          nodes.add({ id: tag, label: tag, group: "tag", size: 10 }); // Initialize tag size
         }
+
+        // Add edge from item to tag
         edges.add({ from: item.id, to: tag });
 
-        nodeConnections[tag] = (nodeConnections[tag] || 0) + 1;
-        nodeConnections[item.id] = (nodeConnections[item.id] || 0) + 1;
+        // Track connections for both item and tag
+        nodeConnections[tag] = (nodeConnections[tag] || 0) + 1; // Number of items using the tag
+        nodeConnections[item.id] = (nodeConnections[item.id] || 0) + 1; // Number of tags for the item
       });
     });
 
+    // Update the size of all nodes based on their connections
     nodes.forEach(node => {
       const connectionCount = nodeConnections[node.id] || 0;
-      node.size = connectionCount * 3;
-      nodes.update(node);
+      node.size = connectionCount * 3; // Scale node size based on the number of connections
+      nodes.update(node); // Apply size change
     });
 
     const container = document.getElementById("connections-graph");
