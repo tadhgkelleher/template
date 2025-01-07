@@ -118,7 +118,7 @@
         randomSeed: 2,
         hierarchical: false,
         improvedLayout: false,
-        circular: true,
+        circular: true,  // Initial layout is circular
       },
     };
 
@@ -133,18 +133,23 @@
     let physicsEnabled = false;
     let currentLayout = "circular";
 
+    const originalLayout = { ...options.layout };  // Store original layout settings
+
     toggleButton.addEventListener("click", function () {
       physicsEnabled = !physicsEnabled;
       options.physics.enabled = physicsEnabled;
+
       if (currentLayout === "circular") {
+        // Switch to random layout
         options.layout.randomSeed = 2;
         options.layout.circular = false;
         currentLayout = "random";
       } else {
-        options.layout.randomSeed = 2;
-        options.layout.circular = true;
+        // Restore original layout (circular)
+        options.layout = { ...originalLayout };  // Reset to the original layout
         currentLayout = "circular";
       }
+
       network.setOptions(options);
       toggleButton.textContent = physicsEnabled ? "Disable Physics" : "Enable Physics";
     });
