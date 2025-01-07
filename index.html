@@ -126,31 +126,33 @@
 
     network.moveTo({
       position: { x: 0, y: 0 },
-      scale: .3,
+      scale: 0.3,
     });
 
     const toggleButton = document.querySelector(".toggle-physics-button");
     let physicsEnabled = false;
-    let currentLayout = "circular";
-
-    const originalLayout = { ...options.layout };  // Store original layout settings
+    let currentLayout = "circular"; // Keep track of the current layout
 
     toggleButton.addEventListener("click", function () {
+      // Toggle physics
       physicsEnabled = !physicsEnabled;
       options.physics.enabled = physicsEnabled;
 
+      // Toggle layout between circular and random
       if (currentLayout === "circular") {
-        // Switch to random layout
-        options.layout.randomSeed = 2;
+        options.layout.randomSeed = Math.floor(Math.random() * 1000); // Randomize seed for random layout
         options.layout.circular = false;
         currentLayout = "random";
       } else {
-        // Restore original layout (circular)
-        options.layout = { ...originalLayout };  // Reset to the original layout
+        options.layout.randomSeed = 2; // Set back to original seed for circular layout
+        options.layout.circular = true;
         currentLayout = "circular";
       }
 
+      // Update network with the new options
       network.setOptions(options);
+
+      // Update button text to reflect the current state
       toggleButton.textContent = physicsEnabled ? "Disable Physics" : "Enable Physics";
     });
   });
