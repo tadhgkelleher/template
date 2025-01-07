@@ -99,7 +99,8 @@
 
     const container = document.getElementById("connections-graph");
     const data = { nodes: nodes, edges: edges };
-    const options = {
+
+    let options = {
       nodes: {
         shape: 'dot',
         font: { size: 16 },
@@ -140,16 +141,24 @@
 
       // Toggle layout between circular and random
       if (currentLayout === "circular") {
-        options.layout.randomSeed = Math.floor(Math.random() * 1000); // Randomize seed for random layout
-        options.layout.circular = false;
+        // Switch to random layout
+        options.layout = {
+          ...options.layout,
+          circular: false, // Disable circular layout
+          randomSeed: Math.floor(Math.random() * 1000), // Randomize seed for random layout
+        };
         currentLayout = "random";
       } else {
-        options.layout.randomSeed = 2; // Set back to original seed for circular layout
-        options.layout.circular = true;
+        // Switch back to circular layout
+        options.layout = {
+          ...options.layout,
+          circular: true, // Enable circular layout
+          randomSeed: 2, // Set back to original seed for circular layout
+        };
         currentLayout = "circular";
       }
 
-      // Update network with the new options
+      // Update network options to apply the changes
       network.setOptions(options);
 
       // Update button text to reflect the current state
